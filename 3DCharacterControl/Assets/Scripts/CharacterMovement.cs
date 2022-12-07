@@ -6,9 +6,10 @@ using UnityEngine.InputSystem;
 public class CharacterMovement : MonoBehaviour
 {
     private Vector3 movementDirection;
-    private CharacterController controller;
+    private Rigidbody rb;
 
     [SerializeField] int speed = 0;
+    
     public void OnMove(InputAction.CallbackContext context)
     {
         // replace y input axe to z to make it unity scene fit
@@ -19,11 +20,12 @@ public class CharacterMovement : MonoBehaviour
 
     public void Awake()
     {
-       controller = GetComponent<CharacterController>();
+       rb = GetComponent<Rigidbody>();
     }
 
     private void Update()
     {
-        controller.Move(movementDirection * Time.deltaTime * speed);
+        rb.velocity += movementDirection * Time.deltaTime * speed ;
+
     }
 }
