@@ -1199,8 +1199,8 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: CharacterMovement, Assembly-CSharp
+      - m_Target: {fileID: 1454033009}
+        m_TargetAssemblyTypeName: AdvancedCharacterController, Assembly-CSharp
         m_MethodName: OnMove
         m_Mode: 0
         m_Arguments:
