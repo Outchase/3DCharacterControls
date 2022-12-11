@@ -1310,7 +1310,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   acceleration: 1
   dampingMovingForward: 0.8
-  dampingWhenStopping: 0.2
+  dampingWhenStopping: 0.5
   dampingWhenTurning: 0.8
 --- !u!1 &1490618719
 GameObject:
