@@ -33,7 +33,6 @@ public class AdvancedCharacterController : MonoBehaviour
         //rb.velocity += movementDirection * Time.deltaTime * speed;
         Movement();
         rb.velocity = new Vector3(horizontalVelocity, rb.velocity.y, verticalVelocity);
-        Debug.Log(movementDirection);
     }
 
     public void Movement()
@@ -42,38 +41,34 @@ public class AdvancedCharacterController : MonoBehaviour
         horizontalVelocity = rb.velocity.x;
         verticalVelocity = rb.velocity.z;
 
-        horizontalVelocity += movementDirection.x;
-        verticalVelocity += movementDirection.z;
+        horizontalVelocity = CalculateVelocity(horizontalVelocity, movementDirection.x);
+        verticalVelocity = CalculateVelocity(verticalVelocity, movementDirection.z);
 
+        //Debug.Log(horizontalVelocity);
+        //Debug.Log(verticalVelocity);
+
+    }
+
+    private float CalculateVelocity(float directionVelocity, float direction) {
+
+        directionVelocity += direction;
         //flip negaive number into positive, verify movement direction and on 0 damp speed
         //damp speed when direction is switched
         //damp while moving forward
-        if (Mathf.Abs(movementDirection.x) < 0.01f) //Abs flips negative to positive
+        if (Mathf.Abs(direction) < 0.01f) //Abs flips negative to positive
         {
-            horizontalVelocity *= Mathf.Pow(acceleration - dampingWhenStopping, Time.deltaTime * 10f);
+            directionVelocity *= Mathf.Pow(acceleration - dampingWhenStopping, Time.deltaTime * 10f);
         }
-        else if (Mathf.Sign(movementDirection.x) != Mathf.Sign(horizontalVelocity))// Sign turns positive and 0 to 1 and negative to -1
+        else if (Mathf.Sign(direction) != Mathf.Sign(directionVelocity))// Sign turns positive and 0 to 1 and negative to -1
         {
-            horizontalVelocity *= Mathf.Pow(acceleration - dampingWhenTurning, Time.deltaTime * 10f);
-        }
-        else
-        {
-            horizontalVelocity *= Mathf.Pow(acceleration - dampingMovingForward, Time.deltaTime * 10f);//x^y
-        }
-
-        //reformulate movement
-
-        if (Mathf.Abs(movementDirection.z) < 0.01f) //Abs flips negative to positive
-        {
-            verticalVelocity *= Mathf.Pow(acceleration - dampingWhenStopping, Time.deltaTime * 10f);
-        }
-        else if (Mathf.Sign(movementDirection.z) != Mathf.Sign(verticalVelocity))// Sign turns positive and 0 to 1 and negative to -1
-        {
-            verticalVelocity *= Mathf.Pow(acceleration - dampingWhenTurning, Time.deltaTime * 10f);
+            directionVelocity *= Mathf.Pow(acceleration - dampingWhenTurning, Time.deltaTime * 10f);
         }
         else
         {
-            verticalVelocity *= Mathf.Pow(acceleration - dampingMovingForward, Time.deltaTime * 10f);//x^y
+            directionVelocity *= Mathf.Pow(acceleration - dampingMovingForward, Time.deltaTime * 10f);//x^y
         }
+
+        return directionVelocity;
+
     }
 }
