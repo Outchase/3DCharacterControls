@@ -15,12 +15,13 @@ public class AdvancedCharacterController : MonoBehaviour
     [SerializeField] float dampingWhenStopping = 0.5f;
     [SerializeField] float dampingWhenTurning = 0.8f;
 
-    public void OnMove(InputAction.CallbackContext context)
+    public void Move(InputAction.CallbackContext context)
     {
         // replace y input axe to z to make it unity scene fit
         movementDirection = context.ReadValue<Vector2>();
         movementDirection.z = movementDirection.y;
         movementDirection.y = 0;
+        Debug.Log("pressed");
     }
 
     public void Awake()
