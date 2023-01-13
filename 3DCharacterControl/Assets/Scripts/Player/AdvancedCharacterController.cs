@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class AdvancedCharacterController : MonoBehaviour
 {
@@ -10,19 +11,39 @@ public class AdvancedCharacterController : MonoBehaviour
     private float horizontalVelocity = 0;
     private float verticalVelocity = 0;
     private InputOptions inputOptions;
+    private bool isGrounded;
 
     [SerializeField] float acceleration = 1;
     [SerializeField] float dampingMovingForward = 0.6f;
     [SerializeField] float dampingWhenStopping = 0.5f;
     [SerializeField] float dampingWhenTurning = 0.8f;
     [SerializeField] float speedMultipier = 1.25f;
-    [SerializeField] float jumpHeight = 1f;
+    [SerializeField] float jumpForce = 10f;
+    [SerializeField] float shortJump = 5f;
+    [SerializeField] LayerMask groundLayer;
+
+    [Header("Rotation")]
+    private float xAxis;
+    private float yAxis;
+
+    public float xAxisSpeed;
+    public float yAxisSpeed;
+
+    public Vector2 minMaxAxis;
+
+    public bool invertxAxis;
+
+    [SerializeField] Transform eyes;
+
+
 
     public void Awake()
     {
         rb = GetComponent<Rigidbody>();
         inputOptions = new InputOptions();
         inputOptions.Player.Jump.started += Jump;
+        inputOptions.Player.Jump.canceled += Jump;
+
         inputOptions.Player.Dash.performed += Dash;
         inputOptions.Player.Dash.canceled += Dash;
 
@@ -34,14 +55,16 @@ public class AdvancedCharacterController : MonoBehaviour
     private void FixedUpdate()
     {
         Move(inputOptions.Player.Move.ReadValue<Vector2>());
+        Rotate(inputOptions.Player.Look.ReadValue<Vector2>());
         rb.velocity = new Vector3(horizontalVelocity, rb.velocity.y, verticalVelocity);
-
+        isGrounded = Physics.SphereCast(transform.position, 0.2f, -transform.up, out _, 1, groundLayer);
     }
 
     private void OnEnable()
     {
         inputOptions.Enable();
     }
+
 
     private void OnDisable()
     {
@@ -55,7 +78,20 @@ public class AdvancedCharacterController : MonoBehaviour
         movementDirection = context;
         movementDirection.z = movementDirection.y;
         movementDirection.y = 0;
+        movementDirection = transform.TransformDirection(movementDirection);
         Movement();
+    }
+
+    public void Rotate(Vector2 context)
+    {
+
+        // Debug.Log(context);
+        xAxis += (invertxAxis ? 1 : -1) * (context.y * xAxisSpeed * Time.deltaTime);
+        xAxis = Mathf.Clamp(xAxis, minMaxAxis.x, minMaxAxis.y);
+        eyes.transform.localEulerAngles = Vector3.right * xAxis;
+
+        yAxis += context.x * yAxisSpeed * Time.deltaTime;
+        transform.eulerAngles = Vector3.up * yAxis;
     }
 
     public void Movement()
@@ -97,22 +133,30 @@ public class AdvancedCharacterController : MonoBehaviour
 
     public void Jump(InputAction.CallbackContext context)
     {
-        Debug.Log("jump");
+        if (context.started && isGrounded)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+
+        }
+
+        if (context.canceled && isGrounded)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, shortJump);
+        }
     }
+
     public void Dash(InputAction.CallbackContext context)
     {
-        //dampingMovingForward /= speedMultipier;
 
-        /*  if (context.performed)
-          {
-              dampingMovingForward /= speedMultipier;
-          }
+        if (context.performed)
+        {
+            dampingMovingForward /= speedMultipier;
+        }
 
-          if (context.canceled)
-          {
-              dampingMovingForward *= speedMultipier;
-          }*/
-        Debug.Log("dash");
+        if (context.canceled)
+        {
+            dampingMovingForward *= speedMultipier;
+        }
     }
 }
 
