@@ -10,47 +10,53 @@ public class AdvancedCharacterController : MonoBehaviour
     private Rigidbody rb;
     private float horizontalVelocity = 0;
     private float verticalVelocity = 0;
+    private float xAxis;
+    private float yAxis;
     private InputOptions inputOptions;
     private bool isGrounded;
 
+    [Header("Movement")]
     [SerializeField] float acceleration = 1;
     [SerializeField] float dampingMovingForward = 0.6f;
     [SerializeField] float dampingWhenStopping = 0.5f;
     [SerializeField] float dampingWhenTurning = 0.8f;
-    [SerializeField] float speedMultipier = 1.25f;
-    [SerializeField] float jumpForce = 10f;
-    [SerializeField] float shortJump = 5f;
+
     [SerializeField] LayerMask groundLayer;
 
     [Header("Rotation")]
-    private float xAxis;
-    private float yAxis;
-
-    public float xAxisSpeed;
-    public float yAxisSpeed;
-
-    public Vector2 minMaxAxis;
-
-    public bool invertxAxis;
-
+    [SerializeField] float xAxisSpeed;
+    [SerializeField] float yAxisSpeed;
+    [SerializeField] Vector2 minMaxAxis;
+    [SerializeField] bool invertYAxis;
     [SerializeField] Transform eyes;
 
+    [Header("Features")]
+    [SerializeField] bool enableSprint;
+    [SerializeField] float speedMultipier = 1.25f;
+
+    [Space]
+    [SerializeField] bool enableJump;
+    [SerializeField] float jumpForce = 10f;
+    [SerializeField] bool enableShortJump;
+    [SerializeField] float shortJump = 5f;
 
 
     public void Awake()
     {
         rb = GetComponent<Rigidbody>();
         inputOptions = new InputOptions();
+
         inputOptions.Player.Jump.started += Jump;
+
         inputOptions.Player.Jump.canceled += Jump;
 
         inputOptions.Player.Dash.performed += Dash;
         inputOptions.Player.Dash.canceled += Dash;
 
+
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
     }
-
 
     private void FixedUpdate()
     {
@@ -86,7 +92,7 @@ public class AdvancedCharacterController : MonoBehaviour
     {
 
         // Debug.Log(context);
-        xAxis += (invertxAxis ? 1 : -1) * (context.y * xAxisSpeed * Time.deltaTime);
+        xAxis += (invertYAxis ? 1 : -1) * (context.y * xAxisSpeed * Time.deltaTime);
         xAxis = Mathf.Clamp(xAxis, minMaxAxis.x, minMaxAxis.y);
         eyes.transform.localEulerAngles = Vector3.right * xAxis;
 
@@ -133,29 +139,37 @@ public class AdvancedCharacterController : MonoBehaviour
 
     public void Jump(InputAction.CallbackContext context)
     {
-        if (context.started && isGrounded)
+        if (enableJump)
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            if (context.started && isGrounded)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
 
-        }
+            }
 
-        if (context.canceled && isGrounded)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, shortJump);
+            if (enableShortJump)
+            {
+                if (context.canceled && isGrounded)
+                {
+                    rb.velocity = new Vector2(rb.velocity.x, shortJump);
+                }
+            }
         }
     }
 
     public void Dash(InputAction.CallbackContext context)
     {
-
-        if (context.performed)
+        if (enableSprint)
         {
-            dampingMovingForward /= speedMultipier;
-        }
+            if (context.performed)
+            {
+                dampingMovingForward /= speedMultipier;
+            }
 
-        if (context.canceled)
-        {
-            dampingMovingForward *= speedMultipier;
+            if (context.canceled)
+            {
+                dampingMovingForward *= speedMultipier;
+            }
         }
     }
 }

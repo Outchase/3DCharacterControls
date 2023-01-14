@@ -1169,17 +1169,20 @@ MonoBehaviour:
   dampingMovingForward: 0.6
   dampingWhenStopping: 0.5
   dampingWhenTurning: 0.8
-  speedMultipier: 1.25
-  jumpForce: 10
-  shortJump: 5
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
   xAxisSpeed: 10
   yAxisSpeed: 10
   minMaxAxis: {x: -45, y: 45}
-  invertxAxis: 0
+  invertYAxis: 0
   eyes: {fileID: 330585546}
+  enableSprint: 0
+  speedMultipier: 1.25
+  enableJump: 0
+  jumpForce: 10
+  enableShortJump: 0
+  shortJump: 5
 --- !u!1 &1490618719
 GameObject:
   m_ObjectHideFlags: 0
