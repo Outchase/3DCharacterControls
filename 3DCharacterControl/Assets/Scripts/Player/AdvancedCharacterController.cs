@@ -12,9 +12,10 @@ public class AdvancedCharacterController : MonoBehaviour
     private float verticalVelocity = 0;
     private float xAxis;
     private float yAxis;
-    private float tempGravity = 0;
+    //private float tempGravity = 0;
     private float tempGrounded = 0;
     private float tempJumpPress = 0;
+    private int extraAmountOfJumps;
     private bool isGrounded;
     private InputOptions inputOptions;
 
@@ -34,14 +35,15 @@ public class AdvancedCharacterController : MonoBehaviour
     [SerializeField] Transform eyes;
 
     [Header("Features")]
-    [SerializeField] bool enableSprint;
+    [SerializeField] bool enableSprint = false;
     [SerializeField] float speedMultipier = 1.25f;
 
     [Space]
-    [SerializeField] bool enableJump;
+    [SerializeField] bool enableJump = false;
+    [SerializeField] bool enableDoubleJump = false;
     [SerializeField] float jumpForce = 10f;
     [Space]
-    [SerializeField] bool enableShortJump;
+    [SerializeField] bool enableShortJump = false;
     [SerializeField] float shortJump = 5f;
     [Space]
     [SerializeField] bool enableCoyoteTimer;
@@ -57,10 +59,7 @@ public class AdvancedCharacterController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         inputOptions = new InputOptions();
 
-        tempGravity = Physics.gravity.y;
-
-        //Debug.Log(tempGravity);
-
+        //tempGravity = Physics.gravity.y;
 
         inputOptions.Player.Jump.started += Jump;
 
@@ -78,7 +77,6 @@ public class AdvancedCharacterController : MonoBehaviour
     {
         Move(inputOptions.Player.Move.ReadValue<Vector2>());
         Rotate(inputOptions.Player.Look.ReadValue<Vector2>());
-        rb.velocity = new Vector3(horizontalVelocity, rb.velocity.y, verticalVelocity);
         isGrounded = Physics.SphereCast(transform.position, 0.2f, -transform.up, out _, 1, groundLayer);
 
         //coyote Time set whenever player is on ground
@@ -97,7 +95,13 @@ public class AdvancedCharacterController : MonoBehaviour
             tempJumpPress -= Time.deltaTime;
         }
 
-        Debug.Log(tempJumpPress);
+        if (enableDoubleJump && isGrounded)
+        {
+            extraAmountOfJumps = 1;
+        }
+
+
+        rb.velocity = new Vector3(horizontalVelocity, rb.velocity.y, verticalVelocity);
     }
 
     private void OnEnable()
@@ -177,14 +181,13 @@ public class AdvancedCharacterController : MonoBehaviour
                     tempJumpPress = JumpBeforeGroundTimer;
                 }
 
-                if (tempJumpPress > 0 && tempGrounded > 0 || isGrounded)
+                if (tempJumpPress > 0 && tempGrounded > 0 || isGrounded || enableDoubleJump && extraAmountOfJumps > 0)
                 {
                     tempJumpPress = 0;
                     tempGrounded = 0;
-                    //extraAmountOfJumps = 1;
 
-                    //rb.velocity = new Vector2(rb.velocity.x, jumpForce);
                     rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                    extraAmountOfJumps--;
                 }
 
             }
