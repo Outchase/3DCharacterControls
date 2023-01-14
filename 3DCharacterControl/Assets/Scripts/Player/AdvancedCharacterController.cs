@@ -12,8 +12,11 @@ public class AdvancedCharacterController : MonoBehaviour
     private float verticalVelocity = 0;
     private float xAxis;
     private float yAxis;
-    private InputOptions inputOptions;
+    private float tempGravity = 0;
+    private float tempGrounded = 0;
+    private float tempJumpPress = 0;
     private bool isGrounded;
+    private InputOptions inputOptions;
 
     [Header("Movement")]
     [SerializeField] float acceleration = 1;
@@ -37,14 +40,27 @@ public class AdvancedCharacterController : MonoBehaviour
     [Space]
     [SerializeField] bool enableJump;
     [SerializeField] float jumpForce = 10f;
+    [Space]
     [SerializeField] bool enableShortJump;
     [SerializeField] float shortJump = 5f;
+    [Space]
+    [SerializeField] bool enableCoyoteTimer;
+    [SerializeField] float coyoteTimer = 0.1f;
+    [Space]
+    [SerializeField] bool enableJumpBuffer;
+    [SerializeField] float JumpBeforeGroundTimer = 0.2f;
+
 
 
     public void Awake()
     {
         rb = GetComponent<Rigidbody>();
         inputOptions = new InputOptions();
+
+        tempGravity = Physics.gravity.y;
+
+        //Debug.Log(tempGravity);
+
 
         inputOptions.Player.Jump.started += Jump;
 
@@ -64,13 +80,30 @@ public class AdvancedCharacterController : MonoBehaviour
         Rotate(inputOptions.Player.Look.ReadValue<Vector2>());
         rb.velocity = new Vector3(horizontalVelocity, rb.velocity.y, verticalVelocity);
         isGrounded = Physics.SphereCast(transform.position, 0.2f, -transform.up, out _, 1, groundLayer);
+
+        //coyote Time set whenever player is on ground
+        if (enableCoyoteTimer)
+        {
+            tempGrounded -= Time.deltaTime;
+            if (isGrounded)
+            {
+                tempGrounded = coyoteTimer;
+            }
+        }
+
+        //let player jump before hiting the ground
+        if (enableJumpBuffer)
+        {
+            tempJumpPress -= Time.deltaTime;
+        }
+
+        Debug.Log(tempJumpPress);
     }
 
     private void OnEnable()
     {
         inputOptions.Enable();
     }
-
 
     private void OnDisable()
     {
@@ -85,7 +118,16 @@ public class AdvancedCharacterController : MonoBehaviour
         movementDirection.z = movementDirection.y;
         movementDirection.y = 0;
         movementDirection = transform.TransformDirection(movementDirection);
-        Movement();
+
+        //add basic velocity each frame
+        horizontalVelocity = rb.velocity.x;
+        verticalVelocity = rb.velocity.z;
+
+        horizontalVelocity = CalculateVelocity(horizontalVelocity, movementDirection.x);
+        verticalVelocity = CalculateVelocity(verticalVelocity, movementDirection.z);
+
+        //Debug.Log(horizontalVelocity);
+        //Debug.Log(verticalVelocity);
     }
 
     public void Rotate(Vector2 context)
@@ -98,19 +140,6 @@ public class AdvancedCharacterController : MonoBehaviour
 
         yAxis += context.x * yAxisSpeed * Time.deltaTime;
         transform.eulerAngles = Vector3.up * yAxis;
-    }
-
-    public void Movement()
-    {
-        //add basic velocity each frame
-        horizontalVelocity = rb.velocity.x;
-        verticalVelocity = rb.velocity.z;
-
-        horizontalVelocity = CalculateVelocity(horizontalVelocity, movementDirection.x);
-        verticalVelocity = CalculateVelocity(verticalVelocity, movementDirection.z);
-
-        //Debug.Log(horizontalVelocity);
-        //Debug.Log(verticalVelocity);
     }
 
     private float CalculateVelocity(float directionVelocity, float direction)
@@ -141,9 +170,22 @@ public class AdvancedCharacterController : MonoBehaviour
     {
         if (enableJump)
         {
-            if (context.started && isGrounded)
+            if (context.started)
             {
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                if (enableJumpBuffer)
+                {
+                    tempJumpPress = JumpBeforeGroundTimer;
+                }
+
+                if (tempJumpPress > 0 && tempGrounded > 0 || isGrounded)
+                {
+                    tempJumpPress = 0;
+                    tempGrounded = 0;
+                    //extraAmountOfJumps = 1;
+
+                    //rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                    rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                }
 
             }
 
