@@ -136,13 +136,34 @@ public class AdvancedCharacterController : MonoBehaviour
 
     public void Rotate(Vector2 context)
     {
+        int pitchAxis;
 
-        // Debug.Log(context);
-        xAxis += (invertYAxis ? 1 : -1) * (context.y * xAxisSpeed * Time.deltaTime);
+        //xAxis from pitch perspective
+        //check if pitch axis is invert
+        if (invertYAxis == true)
+        {
+            pitchAxis = 1;
+        }
+        else
+        {
+            pitchAxis = -1;
+        }
+
+        //positive or negative speed of pitch axis
+        xAxis += pitchAxis * (context.y * xAxisSpeed * Time.deltaTime);
+
+        //example for inline
+        //xAxis += (invertYAxis ? 1 : -1) * (context.y * xAxisSpeed * Time.deltaTime);
+
+        //set range limit
         xAxis = Mathf.Clamp(xAxis, minMaxAxis.x, minMaxAxis.y);
+        
+        //moves only camera
         eyes.transform.localEulerAngles = Vector3.right * xAxis;
 
         yAxis += context.x * yAxisSpeed * Time.deltaTime;
+
+        //rotate player
         transform.eulerAngles = Vector3.up * yAxis;
     }
 
